@@ -7,6 +7,8 @@
  */
 public class SmartAI implements IOthelloAI{
 
+    private static int MAX_DEPTH = 7;
+
 	/**
 	 * Returns first legal move
 	 */
@@ -28,7 +30,7 @@ public class SmartAI implements IOthelloAI{
     // return v,move
     
     public static UtilMove MAXVALUE(GameState state, int alpha, int beta, int counter, int player) {
-        if (state.isFinished() || counter > 7) {
+        if (state.isFinished() || counter > MAX_DEPTH) {
             return new UtilMove(Utility(state, player), null);
         }
         int v = Integer.MIN_VALUE;
@@ -70,7 +72,7 @@ public class SmartAI implements IOthelloAI{
     // return v,move
 
     public static UtilMove MINVALUE(GameState state, int alpha, int beta, int counter, int player) {
-        if (state.isFinished() || counter > 7) {
+        if (state.isFinished() || counter > MAX_DEPTH) {
             return new UtilMove(Utility(state, player), null);
         }
         int v = Integer.MAX_VALUE;
