@@ -42,7 +42,7 @@ public class OldSmartAI implements IOthelloAI{
             //if it's the AI's turn, call MAXVALUE, else MINVALUE
             UtilMove utilMove = state.getPlayerInTurn() == player ? MAXVALUE(newState, alpha, beta, counter + 1, player) : MINVALUE(newState, alpha, beta, counter + 1, player);
 
-            if (utilMove.util > v){
+            if (utilMove.util > v || move == null){
                 v = utilMove.util;
                 move = m;
                 alpha = Math.max(alpha, v);
@@ -82,7 +82,7 @@ public class OldSmartAI implements IOthelloAI{
             if (!newState.insertToken(m)) break;
             
             UtilMove utilMove = state.getPlayerInTurn() == player ? MAXVALUE(newState, alpha, beta, counter + 1, player) : MINVALUE(newState, alpha, beta, counter + 1, player);
-            if (utilMove.util < v){
+            if (utilMove.util < v || move == null){
                 v = utilMove.util;
                 move = m;
                 beta = Math.min(beta, v);
@@ -101,8 +101,11 @@ public class OldSmartAI implements IOthelloAI{
     //Evaluater function
     public static int Utility(GameState state, int player) {
         var tokens = state.countTokens();
-        
-        return (player == 1 ? 1 : -1) * (tokens[0] - tokens[1]);
+        var score = (player == 1 ? 1 : -1) * (tokens[0] - tokens[1]);
+        if (state.isFinished())
+            return score > 0 ? Integer.MAX_VALUE : (score < 0 ? Integer.MIN_VALUE : 0);
+
+        return score;
     }
     
     static class UtilMove {

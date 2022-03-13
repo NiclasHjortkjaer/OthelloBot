@@ -42,7 +42,7 @@ public class SmartAI implements IOthelloAI{
             //if it's the AI's turn, call MAXVALUE, else MINVALUE
             UtilMove utilMove = state.getPlayerInTurn() == player ? MAXVALUE(newState, alpha, beta, counter + 1, player) : MINVALUE(newState, alpha, beta, counter + 1, player);
 
-            if (utilMove.util > v){
+            if (utilMove.util > v || move == null){
                 v = utilMove.util;
                 move = m;
                 alpha = Math.max(alpha, v);
@@ -82,7 +82,7 @@ public class SmartAI implements IOthelloAI{
             if (!newState.insertToken(m)) break;
             
             UtilMove utilMove = state.getPlayerInTurn() == player ? MAXVALUE(newState, alpha, beta, counter + 1, player) : MINVALUE(newState, alpha, beta, counter + 1, player);
-            if (utilMove.util < v){
+            if (utilMove.util < v || move == null){
                 v = utilMove.util;
                 move = m;
                 beta = Math.min(beta, v);
@@ -102,10 +102,14 @@ public class SmartAI implements IOthelloAI{
     public static int Utility(GameState state, int player) {
         var tokens = state.countTokens();
 
-        if (state.isFinished())
-            return state.getPlayerInTurn() == player ? Integer.MAX_VALUE : Integer.MIN_VALUE;
-        
         var score = (player == 1 ? 1 : -1) * (tokens[0] - tokens[1]);
+
+        if (state.isFinished())
+            return score > 0 ? Integer.MAX_VALUE : (score < 0 ? Integer.MIN_VALUE : 0);
+
+        //Early game you want as few tokens as possible
+        if ((tokens[0] + tokens[1]) < Math.pow(state.getBoard().length, 2) / 3) 
+            score *= -1;
         
         var board = state.getBoard();
         var boardX = board.length - 1;
@@ -113,6 +117,7 @@ public class SmartAI implements IOthelloAI{
 
         var scores = new int[3];
 
+        //corners +10 utility
         scores[board[0][0]] += 9;
         
         scores[board[boardX][0]] += 9;
@@ -121,32 +126,68 @@ public class SmartAI implements IOthelloAI{
 
         scores[board[boardX][boardY]] += 9;
 
-        scores[board[0][1]] -= 6;
-        scores[board[1][1]] -= 6;
-        scores[board[1][0]] -= 6;
+        //squares beside corners -5 utility
+        if (board[0][0] != player){
+            scores[board[0][1]] -= 6;
+            scores[board[1][1]] -= 6;
+            scores[board[1][0]] -= 6;
+        }
+        
+        if (board[boardX][0] != player) {
+            scores[board[boardX][1]] -= 6;
+            scores[board[boardX - 1][1]] -= 6;
+            scores[board[boardX - 1][0]] -= 6;
+        }
 
-        scores[board[boardX][1]] -= 6;
-        scores[board[boardX - 1][1]] -= 6;
-        scores[board[boardX - 1][0]] -= 6;
+        if (board[0][boardY] != player) {
+            scores[board[1][boardY]] -= 6;
+            scores[board[1][boardY - 1]] -= 6;
+            scores[board[0][boardY - 1]] -= 6;
+        }
 
-        scores[board[1][boardY]] -= 6;
-        scores[board[1][boardY - 1]] -= 6;
-        scores[board[0][boardY - 1]] -= 6;
+        if (board[boardX][boardY] != player) {
+            scores[board[boardX - 1][boardY]] -= 6;
+            scores[board[boardX - 1][boardY - 1]] -= 6;
+            scores[board[boardX][boardY - 1]] -= 6;
+        }
 
-        scores[board[boardX - 1][boardY]] -= 6;
-        scores[board[boardX - 1][boardY - 1]] -= 6;
-        scores[board[boardX][boardY - 1]] -= 6;
+        //sides +3 utility
+        for (int i = 2; i < boardX - 2; i++) {
+            scores[board[i][0]] += 2;
+            scores[board[0][i]] += 2;
+            scores[board[boardX][i]] += 2;
+            scores[board[i][boardY]] += 2;
+        }
+
+        if (board[0][0] != 0) {
+            scores[board[0][1]] += 2;
+            scores[board[1][0]] += 2;
+        }
+
+        if (board[boardX][0] != 0) {
+            scores[board[boardX][1]] += 2;
+            scores[board[boardX - 1][0]] += 2;
+        }
+
+        if (board[0][boardY] != 0) {
+            scores[board[1][boardY]] += 2;
+            scores[board[0][boardY - 1]] += 2;
+        }
+
+        if (board[boardX][boardY] != 0) {
+            scores[board[boardX][boardY - 1]] += 2;
+            scores[board[boardX - 1][boardY]] += 2;
+        }
 
         if (player == 1) {
             score += scores[1];
             score -= scores[2];
-            return score;
         }
         else {
             score += scores[2];
             score -= scores[1];
-            return score;
         }
+        return score;
     }
     
     static class UtilMove {
