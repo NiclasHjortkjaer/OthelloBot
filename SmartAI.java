@@ -11,7 +11,7 @@ public class SmartAI implements IOthelloAI{
 	 * Returns first legal move
 	 */
 	public Position decideMove(GameState state){
-        var m = MAXVALUE(state, Integer.MIN_VALUE, Integer.MAX_VALUE, -1, state.getPlayerInTurn());
+        var m = MAXVALUE(state, Integer.MIN_VALUE, Integer.MAX_VALUE, 0, state.getPlayerInTurn());
         System.out.println("--- Smart AI decided on the move: ---");
         System.out.println(m.toString() + "\n\n");
         return m.move;
@@ -28,7 +28,7 @@ public class SmartAI implements IOthelloAI{
     // return v,move
     
     public static UtilMove MAXVALUE(GameState state, int alpha, int beta, int counter, int player) {
-        if (state.isFinished() || counter > 3) {
+        if (state.isFinished() || counter > 7) {
             return new UtilMove(Utility(state, player), null);
         }
         int v = Integer.MIN_VALUE;
@@ -70,7 +70,7 @@ public class SmartAI implements IOthelloAI{
     // return v,move
 
     public static UtilMove MINVALUE(GameState state, int alpha, int beta, int counter, int player) {
-        if (state.isFinished() || counter > 3) {
+        if (state.isFinished() || counter > 7) {
             return new UtilMove(Utility(state, player), null);
         }
         int v = Integer.MAX_VALUE;
