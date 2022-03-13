@@ -5,14 +5,14 @@
  * @author Mai Ajspur
  * @version 9.2.2018
  */
-public class SmartAI implements IOthelloAI{
+public class OldSmartAI implements IOthelloAI{
 
 	/**
 	 * Returns first legal move
 	 */
 	public Position decideMove(GameState state){
         var m = MAXVALUE(state, Integer.MIN_VALUE, Integer.MAX_VALUE, -1, state.getPlayerInTurn());
-        System.out.println("--- Smart AI decided on the move: ---");
+        System.out.println("--- OLD AI decided on the move: ---");
         System.out.println(m.toString() + "\n\n");
         return m.move;
 	}
@@ -101,52 +101,8 @@ public class SmartAI implements IOthelloAI{
     //Evaluater function
     public static int Utility(GameState state, int player) {
         var tokens = state.countTokens();
-
-        if (state.isFinished())
-            return state.getPlayerInTurn() == player ? Integer.MAX_VALUE : Integer.MIN_VALUE;
         
-        var score = (player == 1 ? 1 : -1) * (tokens[0] - tokens[1]);
-        
-        var board = state.getBoard();
-        var boardX = board.length - 1;
-        var boardY = board[0].length - 1;
-
-        var scores = new int[3];
-
-        scores[board[0][0]] += 9;
-        
-        scores[board[boardX][0]] += 9;
-
-        scores[board[0][boardY]] += 9;
-
-        scores[board[boardX][boardY]] += 9;
-
-        scores[board[0][1]] -= 6;
-        scores[board[1][1]] -= 6;
-        scores[board[1][0]] -= 6;
-
-        scores[board[boardX][1]] -= 6;
-        scores[board[boardX - 1][1]] -= 6;
-        scores[board[boardX - 1][0]] -= 6;
-
-        scores[board[1][boardY]] -= 6;
-        scores[board[1][boardY - 1]] -= 6;
-        scores[board[0][boardY - 1]] -= 6;
-
-        scores[board[boardX - 1][boardY]] -= 6;
-        scores[board[boardX - 1][boardY - 1]] -= 6;
-        scores[board[boardX][boardY - 1]] -= 6;
-
-        if (player == 1) {
-            score += scores[1];
-            score -= scores[2];
-            return score;
-        }
-        else {
-            score += scores[2];
-            score -= scores[1];
-            return score;
-        }
+        return (player == 1 ? 1 : -1) * (tokens[0] - tokens[1]);
     }
     
     static class UtilMove {
