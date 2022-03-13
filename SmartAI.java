@@ -14,90 +14,78 @@ public class SmartAI implements IOthelloAI{
 	 */
 	public Position decideMove(GameState state){
         var m = MAXVALUE(state, Integer.MIN_VALUE, Integer.MAX_VALUE, 0, state.getPlayerInTurn());
-        System.out.println("--- Smart AI decided on the move: ---");
-        System.out.println(m.toString() + "\n\n");
         return m.move;
 	}
-
-    // function MAX-VALUE(game,state) returns (utility,move)
-    // if game.IS-TERMINAL(state) then
-    // return game.UTILITY(state,MAX), null
-    // v ← -∞
-    // for each a in game.ACTIONS(state) do
-    // v2,a2 ← MIN-VALUE(game,game.RESULT(state,a))
-    // if v2 > v then
-    // v,move ← v2,a
-    // return v,move
     
     public static UtilMove MAXVALUE(GameState state, int alpha, int beta, int counter, int player) {
+        // Checks if the game is finished or if the maximum depth has been reached
+        // Then returns the utility at this position
         if (state.isFinished() || counter > MAX_DEPTH) {
             return new UtilMove(Utility(state, player), null);
         }
+
+        // helper variables
         int v = Integer.MIN_VALUE;
         var moves = state.legalMoves();
         Position move = null;
 
         for (var m : moves) {
+            //Creates new identical state so as to not insert token on the actual game state
             var newState = new GameState(state.getBoard(), state.getPlayerInTurn());
             if (!newState.insertToken(m)) break;
             
             //if it's the AI's turn, call MAXVALUE, else MINVALUE
             UtilMove utilMove = state.getPlayerInTurn() == player ? MAXVALUE(newState, alpha, beta, counter + 1, player) : MINVALUE(newState, alpha, beta, counter + 1, player);
 
+            //If the utulity of this move is preferable to the current best?
             if (utilMove.util > v || move == null){
                 v = utilMove.util;
                 move = m;
                 alpha = Math.max(alpha, v);
             }
-            if (v >= beta) {
-                var mo = new UtilMove(v, move);
-                if (mo != null) System.out.println(mo);
-                return mo;
-            }
-        }
 
-        var m = new UtilMove(v, move);
-        if (m != null) System.out.println(m);
-        return m;
+            // Beta cut
+            if (v >= beta) 
+                return new UtilMove(v, move);
+        }
+        //If the utulity of this move is preferable to the current best?
+        return new UtilMove(v, move);
     }
 
-    // function MIN-VALUE(game,state) returns (utility,move)
-    // if game.IS-TERMINAL(state) then
-    // return game.UTILITY(state,MAX), null
-    // v ← +∞
-    // for each a in game.ACTIONS(state) do
-    // v2,a2 ← MAX-VALUE(game,game.RESULT(state,a))
-    // if v2 < v then
-    // v,move ← v2,a
-    // return v,move
-
     public static UtilMove MINVALUE(GameState state, int alpha, int beta, int counter, int player) {
+        // Checks if the game is finished or if the maximum depth has been reached
+        // Then returns the utility at this position
         if (state.isFinished() || counter > MAX_DEPTH) {
             return new UtilMove(Utility(state, player), null);
         }
+        
+        // Helper variables
         int v = Integer.MAX_VALUE;
         var moves = state.legalMoves();
         Position move = null;
 
         for (var m : moves) {
+            //Creates new identical state so as to not insert token on the actual game state
             var newState = new GameState(state.getBoard(), state.getPlayerInTurn());
             if (!newState.insertToken(m)) break;
             
+            //if it's the AI's turn, call MAXVALUE, else MINVALUE
             UtilMove utilMove = state.getPlayerInTurn() == player ? MAXVALUE(newState, alpha, beta, counter + 1, player) : MINVALUE(newState, alpha, beta, counter + 1, player);
+            
+            //If the utulity of this move is preferable to the current best?
             if (utilMove.util < v || move == null){
                 v = utilMove.util;
                 move = m;
                 beta = Math.min(beta, v);
             }
-            if (v <= alpha) {
-                var mo = new UtilMove(v, move);
-                if (mo != null) System.out.println(mo);
-                return mo;
-            }
+
+            // Alpha cut
+            if (v <= alpha) 
+                return new UtilMove(v, move);
+            
         }
-        var m = new UtilMove(v, move);
-        if (m != null) System.out.println(m);
-        return m;
+        // returns the utility and the associated move
+        return new UtilMove(v, move);
     }
 	
     //Evaluater function
@@ -106,6 +94,7 @@ public class SmartAI implements IOthelloAI{
 
         var score = (player == 1 ? 1 : -1) * (tokens[0] - tokens[1]);
 
+        // Returns infinity because a win is better than going for more points
         if (state.isFinished())
             return score > 0 ? Integer.MAX_VALUE : (score < 0 ? Integer.MIN_VALUE : 0);
 
@@ -154,7 +143,7 @@ public class SmartAI implements IOthelloAI{
         }
 
         //sides +3 utility
-        for (int i = 2; i < boardX - 2; i++) {
+        for (int i = 2; i <= boardX - 2; i++) {
             scores[board[i][0]] += 2;
             scores[board[0][i]] += 2;
             scores[board[boardX][i]] += 2;
@@ -192,6 +181,7 @@ public class SmartAI implements IOthelloAI{
         return score;
     }
     
+    // Used for returning both the utility and the position
     static class UtilMove {
         int util;
         Position move;
